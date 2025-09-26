@@ -9,11 +9,16 @@ Instructions for AI to generate navigation documentation for any repository.
 
 ## Example: nanoGPT
 
-![Running create-main.md on nanoGPT](./example-usage.png)
+<table>
+<tr>
+<td><img src="./assets/README_1.png" alt="Running create-main.md on nanoGPT" /></td>
+<td><img src="./assets/README_2.png" alt="Writing main.md" /></td>
+</tr>
+</table>
 
 Generated `main.md` helps AI agents navigate nanoGPT without asking questions.
 
-![Generated main.md](./example-output.png)
+![Generated main.md](./assets/README_3.png)
 
 ## Principle
 
