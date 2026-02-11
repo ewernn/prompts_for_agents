@@ -42,6 +42,16 @@ Skip directories that are:
 - Cache directories
 - Generated code
 
+**For projects with nested data structures** (experiment outputs, generated artifacts), show the nesting pattern with template variables. This is often the most useful part of the tree:
+```
+experiments/{name}/
+├── config.json
+├── extraction/{trait}/
+│   ├── responses/
+│   └── vectors/{method}/
+└── inference/{prompt_set}/
+```
+
 ## Step 3: Find Starting Points
 
 Identify where code execution begins:
@@ -52,9 +62,14 @@ Identify where code execution begins:
 
 Follow imports one level deep to understand connections. Stop there.
 
+**For multi-workflow projects**, identify entry points per workflow, not just "run the app":
+- Pipeline scripts (data prep, training, evaluation)
+- Analysis/utility scripts users run directly
+- Server/service entry points
+
 ## Step 4: Create main.md
 
-Use this exact template:
+Use this template, adapting sections based on project complexity:
 
 ```markdown
 # [Project Name]
@@ -64,6 +79,7 @@ Use this exact template:
 ## Repository Structure
 
 [Tree with purpose annotations - only directories that matter]
+[Include nested data patterns with template variables if applicable]
 
 ## Quick Start
 
@@ -76,6 +92,21 @@ Use this exact template:
    ```bash
    [actual command that works]
    ```
+
+## Key Entry Points
+
+[For single-workflow projects, Quick Start above is sufficient — skip this section.
+For multi-workflow projects, show the primary commands with real flags:]
+
+**Workflow A:**
+```bash
+python scripts/do_thing.py --experiment {name} --flag value
+```
+
+**Workflow B:**
+```bash
+python scripts/other_thing.py --input {path}
+```
 
 ## Core Components
 
@@ -90,15 +121,27 @@ Use this exact template:
 
 ## Architecture
 
-[2-3 sentences explaining how components connect and data flows]
+[2-3 sentences explaining how components connect and data flows.
+For projects with clear module dependencies, a simple diagram helps:]
+
+```
+core/         <- Primitives
+    ^
+    |-- Used by: pipeline/
+    |-- Used by: analysis/
+
+utils/        <- Shared utilities
+    ^
+    |-- Used by: all modules
+```
 
 ## Navigation Guide
 
 To work on:
-- API endpoints → `api/routes/`
-- Business logic → `src/services/`
-- Database layer → `src/models/`
-- Configuration → `config/`
+- API endpoints -> `api/routes/`
+- Business logic -> `src/services/`
+- Database layer -> `src/models/`
+- Configuration -> `config/`
 
 [Adjust paths to match actual repository]
 
@@ -111,6 +154,10 @@ To work on:
 - [Known broken features]
 
 ## Additional Documentation
+
+[For projects with 5+ doc files, include a categorized index here.
+Keep descriptions to one phrase each. Don't let this section exceed
+the actual navigation content above it.]
 
 See `docs/` folder for:
 - `api.md` - Endpoint specifications
@@ -138,8 +185,18 @@ See `docs/` folder for:
 - Remove orphaned sections that no longer apply
 - Clean up broken internal links to deleted content
 
-> See `doc-update-guidelines.md` for complete update instructions including state management debugging, deployment checklists, and detailed update rules.
+> See `doc-update-guidelines.md` for complete update instructions.
 ```
+
+### Template Scaling Notes
+
+The template above should be **adapted**, not copied verbatim:
+
+- **Small projects (<20 files)**: Skip "Key Entry Points" and "Additional Documentation". Quick Start + Core Components is enough.
+- **Medium projects (20-100 files)**: Use the full template as-is.
+- **Large projects (100+ files)**: The Documentation Index may need subcategories. Be disciplined — if the index is longer than the navigation content, you've over-documented.
+
+**Common anti-pattern**: main.md that's half navigation, half reference material. Methods tables, API signatures, configuration schemas — these belong in separate docs, linked from main.md. Main.md answers "where is everything?" not "how does everything work?"
 
 ## Step 5: Validate Your Work
 
@@ -152,105 +209,40 @@ Before finalizing, verify:
 
 ## Step 6: Create Documentation Update Guidelines
 
-Create a separate `doc-update-guidelines.md` file in the repository root. This file provides comprehensive instructions for maintaining and updating documentation.
+Create a separate `doc-update-guidelines.md` file in the repository root (or `docs/` if the project uses that convention). See the companion `doc-update-guidelines.md` in this repo for the template content.
 
-Copy the following content exactly:
+Projects should extend the base guidelines with project-specific sections (file placement conventions, build/deploy checklists for their stack, etc.).
+
+## Step 7: CLAUDE.md Integration (Claude Only)
+
+**Skip this step if you are not Claude / not running in Claude Code.**
+
+If the repository will be used with Claude Code, create a `CLAUDE.md` in the repository root that references main.md:
 
 ```markdown
-# Documentation Update Guidelines
+@docs/main.md
 
 ## Core Principles
-- **Delete first, add second** - remove outdated content before adding new
-- **Present tense only** - document what IS, not what WAS
-- **Concise and actionable** - every sentence should help the reader DO something
-- **Zero history** - no changelogs, migration notes, or "previously" references
-- **YAGNI for docs** - delete unused files and sections immediately; they create confusion
-
-## Before You Update
-Ask yourself:
-1. **Why this doc?** - What specific problem are you solving?
-2. **What else breaks?** - Which other docs reference this one?
-3. **Is it salvageable?** - Should you rewrite instead of patch?
-
-## Update Rules
-1. **Delete anything that references:**
-   - Old implementations
-   - Fixed bugs
-   - Previous versions
-   - Historical context
-   - Unused files or features
-
-2. **Keep only:**
-   - Current functionality
-   - Active configuration
-   - Working examples
-   - Essential concepts
-
-3. **File management:**
-   - Delete entire unused documentation files
-   - Remove orphaned sections that no longer apply
-   - Clean up broken internal links to deleted content
-
-4. **Test every:**
-   - Code example
-   - File path
-   - Command
-   - Link
-
-## State Management Debugging
-When fixing component state synchronization:
-
-1. **Map the data flow:**
-   - Identify all state variables (parent and local)
-   - Document which component updates which state
-   - Track props passed between components
-   - Note any one-way vs bi-directional flows
-
-2. **Add proper callbacks:**
-   - Components need `onVisibilityChange` and `onActiveTabChange` callbacks
-   - Child components must notify parent of ALL state changes
-   - Parent must wire callbacks to update its state flags
-   - Never rely on child-only state for shared UI elements
-
-3. **Fix mutual exclusion:**
-   - When one sidebar opens, close the opposite sidebar
-   - Update parent state when auto-hiding components
-   - Check expansion state before allowing new opens
-   - Clear all flags consistently on close
-
-## Deployment Checklist
-Before pushing changes that affect production builds:
-
-1. **TypeScript exports:**
-   - Verify all types used in component props are properly exported
-   - Check that type imports use `type` keyword when importing types only
-   - Ensure no missing type definitions in interface files
-
-2. **Common build failures:**
-   - Missing type exports from config/utility files
-   - Unused imports causing tree-shaking issues
-   - Incorrect file paths in import statements
-
-3. **Quick validation:**
-   - Run `npm run build` locally before pushing
-   - Check TypeScript compilation with `npx tsc --noEmit`
-   - Review any new prop types added to components
-
-## Related Documentation
-When updating one doc, check these for consistency:
-- `main.md` - if feature names or structure changed
-- Schema files - if data structures are referenced
-
-## Red Flags for Full Rewrite
-- More than 50% needs deletion
-- Core purpose has changed
-- Structure doesn't match current code
-- Multiple broken examples
-
-Remember: Good documentation is like good code - it's not done when there's nothing left to add, but when there's nothing left to remove.
+[Project-specific behavioral instructions for Claude — code style,
+naming conventions, what to avoid, etc.]
 ```
 
-This file should remain general and unchanged across all repositories. It provides detailed guidance that complements the condensed guidelines in main.md.
+This separates concerns:
+- **main.md** = navigation (any AI agent, any human)
+- **CLAUDE.md** = behavioral instructions (Claude-specific: code style, conventions, constraints)
+
+Don't duplicate main.md content in CLAUDE.md. The `@docs/main.md` directive imports it automatically.
+
+## Step 8: Report What You Created
+
+After creating the documentation, output to chat (not in any file):
+
+1. What files were created and where
+2. How to use them:
+   - For Claude Code users: "CLAUDE.md auto-loads when Claude Code opens this repo. No action needed."
+   - For other AI tools: "Copy the contents of docs/main.md into your system prompt or context window when working on this repo."
+   - For humans: "Start at docs/main.md for navigation. See doc-update-guidelines.md before editing docs."
+3. Any sections you left sparse due to insufficient information
 
 ## What to Include vs. Skip
 
@@ -295,7 +287,9 @@ Your documentation is complete when:
 - [ ] No history, no future plans, only current state
 - [ ] Every sentence helps someone do something
 - [ ] Condensed update guidelines are at the bottom of main.md
-- [ ] Full doc-update-guidelines.md file exists in repository root
+- [ ] doc-update-guidelines.md exists in repository root or docs/
+- [ ] CLAUDE.md created if applicable (Claude only), referencing main.md via @
+- [ ] Usage instructions output to chat
 
 ## Success Test
 

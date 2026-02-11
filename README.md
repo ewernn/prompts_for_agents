@@ -1,11 +1,6 @@
 # create-main-md
 
-Instructions for AI to generate navigation documentation for any repository.
-
-## Usage
-
-1. Drop `create-main.md` into any repository
-2. AI agent creates `main.md` navigation document
+Drop `create-main.md` into any repository. AI agent creates a `main.md` navigation document.
 
 ## Example: nanoGPT
 
@@ -16,17 +11,6 @@ Instructions for AI to generate navigation documentation for any repository.
 </tr>
 </table>
 
-Generated `main.md` helps AI agents navigate nanoGPT without asking questions.
+Generated [`main.md`](nanoGPT_example_main.md) helps AI agents navigate nanoGPT without asking questions.
 
 ![Generated main.md](./assets/README_3.png)
-
-## Principle
-
-Delete first, add second. Documentation is complete when there's nothing left to remove.
-
-```
-├── create-main.md      # AI instructions
-├── README.md           # This file
-└── nanoGPT/           # Example
-    └── main.md        # Generated output
-```
